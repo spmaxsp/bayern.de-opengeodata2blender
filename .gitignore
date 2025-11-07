@@ -1,0 +1,10 @@
+# Ignore everything inside tmp and toolchain directories
+temp/**
+toolchain/**
+
+# But keep the folders themselves (optional)
+!temp/.gitkeep
+!toolchain/.gitkeep
+
+
+*.blend1
