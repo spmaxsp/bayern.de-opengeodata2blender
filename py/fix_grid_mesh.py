@@ -2,6 +2,7 @@
 import bpy
 import bmesh
 from mathutils import Vector
+from tqdm import tqdm
 
 
 def fix_terrain_mesh(collection_name="DEMs"):
@@ -61,7 +62,7 @@ def fix_terrain_mesh(collection_name="DEMs"):
 
     # Create faces for missing quads
     print ("Creating faces for missing quads...")
-    for j in range(ny - 1):
+    for j in tqdm(range(ny - 1)):
         for i in range(nx - 1):
             v1 = coord_map[(xs[i], ys[j])]
             v2 = coord_map[(xs[i+1], ys[j])]

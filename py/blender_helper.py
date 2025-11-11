@@ -1,13 +1,21 @@
 
 
 import bpy
+from tqdm import tqdm
 
 
 def clean_scene():
-    # Select everything
-    bpy.ops.object.select_all(action='SELECT')
-    # Delete all selected objects
-    bpy.ops.object.delete(use_global=False)
+    # Collect all objects to delete
+    objects_to_delete = [
+        obj for obj in bpy.data.objects
+    ]
+    
+    chunk_size = 500  # you can tweak this number
+    for i in tqdm(range(0, len(objects_to_delete), chunk_size), desc="Deleting objects"):
+        bpy.ops.object.select_all(action='DESELECT')
+        for obj in objects_to_delete[i:i + chunk_size]:
+            obj.select_set(True)
+        bpy.ops.object.delete()
     
     # Remove all collections except the main one
     for collection in bpy.data.collections:
@@ -23,24 +31,27 @@ def clean_scene():
         bpy.data.cameras,
         bpy.data.lights,
     ):
-        for block in datablock:
+        for block in tqdm(datablock):
             datablock.remove(block)
     
 
 
 def clean_empty_objects():
-    print ("Cleaning up EMPTY-type objects...")
-    # Deselect all objects
-    bpy.ops.object.select_all(action='DESELECT')
-    
-    # Iterate through all objects in the scene
-    for obj in bpy.data.objects:
-        # Check if the object is an empty
-        if obj.type == 'EMPTY':
-            obj.select_set(True)
+    print("Cleaning up EMPTY-type objects...")
 
-    # Delete selected empties
-    bpy.ops.object.delete()
+    # Collect all EMPTY objects first
+    objects_to_delete = [obj for obj in bpy.data.objects if obj.type == 'EMPTY']
+    
+    total = len(objects_to_delete)
+    print(f"Found {total} empty objects.")
+
+    # Delete objects in chunks to update progress
+    chunk_size = 500 
+    for i in tqdm(range(0, len(objects_to_delete), chunk_size), desc="Deleting objects"):
+        bpy.ops.object.select_all(action='DESELECT')
+        for obj in objects_to_delete[i:i + chunk_size]:
+            obj.select_set(True)
+        bpy.ops.object.delete()
 
 
 def assign_material_to_collection(collection_name, material_name, color=(1, 1, 1, 1), clean_unused=True):
@@ -113,26 +124,28 @@ def delete_all_objects_outside_range(min_x, max_x, min_y, max_y):
 
     # Function to check if an object's bounding box is outside the given range
     def is_outside_xy_bounds(obj, min_x, max_x, min_y, max_y):
-        # Compute the world-space coordinates of the bounding box corners
         world_coords = [obj.matrix_world @ Vector(corner) for corner in obj.bound_box]
         xs = [v.x for v in world_coords]
         ys = [v.y for v in world_coords]
         
-        # If the entire object is outside the bounds, return True
-        if max(xs) < min_x or min(xs) > max_x or max(ys) < min_y or min(ys) > max_y:
-            return True
-        return False
+        return max(xs) < min_x or min(xs) > max_x or max(ys) < min_y or min(ys) > max_y
 
-    # Loop through all objects in the scene
-    for obj in bpy.data.objects:
-        # You can limit this to meshes if you want:
-        if obj.type != 'MESH':
-            continue
+    # Collect all objects to delete
+    objects_to_delete = [
+        obj for obj in tqdm(bpy.data.objects)
+        if obj.type == 'MESH' and is_outside_xy_bounds(obj, min_x, max_x, min_y, max_y)
+    ]
 
-        if is_outside_xy_bounds(obj, min_x, max_x, min_y, max_y):
+    print(f"Found {len(objects_to_delete)} objects outside range.")
+
+    # Delete objects in chunks to update progress
+    chunk_size = 500
+    for i in tqdm(range(0, len(objects_to_delete), chunk_size), desc="Deleting objects"):
+        bpy.ops.object.select_all(action='DESELECT')
+        for obj in objects_to_delete[i:i + chunk_size]:
             obj.select_set(True)
+        bpy.ops.object.delete()
 
-    # Delete all selected objects
-    bpy.ops.object.delete()
+    print("Deletion complete!")
 
     

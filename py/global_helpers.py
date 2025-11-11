@@ -38,14 +38,16 @@ def setup_structure(base_dir):
     lod2_gml_dir = os.path.join(lod2_dir, "gml")
     lod2_json_dir = os.path.join(lod2_dir, "json")
     dgm1_dir = os.path.join(base_dir, "DGM1")
+    tree_dir = os.path.join(base_dir, "tree")
 
     # Create all directories if they don't exist
-    for folder in [lod2_dir, lod2_gml_dir, lod2_json_dir, dgm1_dir]:
+    for folder in [lod2_dir, lod2_gml_dir, lod2_json_dir, dgm1_dir, tree_dir]:
         os.makedirs(folder, exist_ok=True)
 
     return {
         "base": base_dir,
         "lod2_gml": lod2_gml_dir,
         "lod2_json": lod2_json_dir,
-        "dgm1": dgm1_dir
+        "dgm1": dgm1_dir,
+        "tree": tree_dir
     }
