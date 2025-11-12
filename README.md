@@ -32,6 +32,7 @@ Inside the file, the following options can be configured:
 |-----------------------|-------------------------------|
 | **IMPORT_TERRAIN**    | Import GeoTIFF terrain data   |
 | **IMPORT_BUILDINGS**  | Import LoD2 building data     |
+| **IMPORT_TREES**      | Import Tree data              |
 
 | Variable                      | Description                                        |
 |-------------------------------|----------------------------------------------------|
@@ -57,6 +58,10 @@ Other global variables in `__runner.py` are already set correctly and can be lef
 |-----------------------|
 | **DOWNLOAD_LINKS**    |
 | **EWKT_STR**          |
+
+| Variable                | Description                                         |
+|-------------------------|-----------------------------------------------------|
+| **DOWNLOAD_LINK_TREES** | List of all URLs to download the GPKG Files containing the Tree-Data (This has to be done manually because there is no automated way to get a metalink) |
 
 
 After setting all variables in the runner file, you can run the code. However, before doing so, make sure to save your Blender file and open the system console (Window → Toggle System Console).
@@ -110,13 +115,15 @@ The script performs the following steps to download and import data:
 7. **Batch import** the GeoTIFF files.  
 8. **Merge the terrain meshes** and **fix seams** (this step can take quite some time).  
 9. **Batch import** the CityJSON files.  
-10. **Remove unnecessary EMPTY-type objects** created by CityJSON.  
-11. **Assign materials** to the buildings and terrain.  
-12. **Clean up** all buildings and objects outside the specified area.
+10. **Batch import** the GPKG-Tree files.  
+11. **Remove unnecessary EMPTY-type objects** created by CityJSON.  
+12. **Assign materials** to the buildings, terrain and trees.  
+13. **Clean up** all buildings and objects outside the specified area.
 
 ## Screenshots
 
-![purepyhome_logo_wide_vector](./Screenshot.png)
+![Screenshot1](./Screenshot.png)
+![Screenshot2](./Screenshot_2.png)
 
 ## License
 This project is licensed under the MIT licence - see the [LICENSE](./LICENSE) file for details.

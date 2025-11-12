@@ -14,7 +14,10 @@ def clean_scene():
     for i in tqdm(range(0, len(objects_to_delete), chunk_size), desc="Deleting objects"):
         bpy.ops.object.select_all(action='DESELECT')
         for obj in objects_to_delete[i:i + chunk_size]:
-            obj.select_set(True)
+            try:
+                obj.select_set(True)
+            except Exception as e:
+                print(f"Failed to remove object {obj.name}: {e}")
         bpy.ops.object.delete()
     
     # Remove all collections except the main one

@@ -2,6 +2,8 @@ import subprocess, sys
 import bpy
 subprocess.check_call([sys.executable, "-m", "pip", "install", "pyproj"])
 subprocess.check_call([sys.executable, "-m", "pip", "install", "tqdm"])
+subprocess.check_call([sys.executable, "-m", "pip", "install", "geopandas"])
+subprocess.check_call([sys.executable, "-m", "pip", "install", "fiona"])
 
 print("Enabling Blender GIS Add-ons")
 for name in ["BlenderGIS-master", "Up3date-main"]:
@@ -21,6 +23,7 @@ _scripts = (
     "global_helpers.py",
     "opengeodata.py",
     "fix_grid_mesh.py",
+    "trees.py",
     "main.py"
 )
 
@@ -35,8 +38,9 @@ LONGITUDE_TO = 9.16554802
 LATITUDE_SCENE_ORIGIN = 49.9718674767623
 LONGITUDE_SCENE_ORIGIN = 9.161292440683683
 
-IMPORT_TERRAIN = True
-IMPORT_BUILDINGS = True
+IMPORT_TERRAIN = False
+IMPORT_BUILDINGS = False
+IMPORT_TREES = True
 
 REPLACE_EXISTING_FILES = False
 CLEAN_BLENDER = True
@@ -46,6 +50,7 @@ DOWNLOAD_LINKS = {
     "dgm1": "https://geoservices.bayern.de/services/poly2metalink/metalink/dgm1",
     "lod2": "https://geoservices.bayern.de/services/poly2metalink/metalink/lod2"
 }
+DOWNLOAD_LINK_TREES = ["https://geodaten.bayern.de/odd/m/8/baeume3d/data/123007_baeume.gpkg"] 
 EWKT_STR = f"SRID=4326;POLYGON(({LONGITUDE_FROM} {LATITUDE_FROM},{LONGITUDE_FROM} {LATITUDE_TO},{LONGITUDE_TO} {LATITUDE_TO},{LONGITUDE_TO} {LATITUDE_FROM},{LONGITUDE_FROM} {LATITUDE_FROM}))"
 TMP_PATH = "C:\\Users\\USER\\Documents\\opengeodata2blender\\temp\\"
 JAVA_PATH = "C:\\Users\\USER\\Documents\\opengeodata2blender\\toolchain\\jdk-25.0.1\\"

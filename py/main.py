@@ -40,12 +40,19 @@ if __name__ == "__main__":
         print("DGM1 Files:")
         for file_info in dgm1_files:
             print(f"  {file_info['name']}: {file_info['url']}")
+    if IMPORT_TREES:
+        tree_files = gen_tree_download_list(DOWNLOAD_LINK_TREES)
+        print("GEOPACKAGE Files:")
+        for file_info in tree_files:
+            print(f"  {file_info['name']}: {file_info['url']}")
 
     print("Downloading files...")
     if IMPORT_BUILDINGS:
         lod2_files = download_meta_files(lod2_files, dirs["lod2_gml"])
     if IMPORT_TERRAIN:
         dgm1_files = download_meta_files(dgm1_files, dirs["dgm1"])
+    if IMPORT_TREES:
+        tree_files = download_meta_files(tree_files, dirs["tree"])
 
     print("\nSummary of downloaded files:")
     if IMPORT_BUILDINGS:
@@ -56,6 +63,11 @@ if __name__ == "__main__":
     if IMPORT_TERRAIN:
         print("DGM1 Files:")
         for file_info in dgm1_files:
+            if file_info["local"]:
+                print(f"  {file_info['name']}: {file_info['local']}")
+    if IMPORT_TREES:
+        print("DGM1 Files:")
+        for file_info in tree_files:
             if file_info["local"]:
                 print(f"  {file_info['name']}: {file_info['local']}")
 
@@ -70,6 +82,10 @@ if __name__ == "__main__":
 
     origin_utm32_x, origin_utm32_y = wgs84_to_utm32(LATITUDE_SCENE_ORIGIN, LONGITUDE_SCENE_ORIGIN)
     print(f"Origin in UTM32: X={origin_utm32_x:.2f}, Y={origin_utm32_y:.2f}")
+    
+    min_x, min_y = wgs84_to_utm32(LATITUDE_FROM, LONGITUDE_FROM)
+    max_x, max_y = wgs84_to_utm32(LATITUDE_TO, LONGITUDE_TO)
+
     setup_blender_gis("EPSG:25832", LONGITUDE_SCENE_ORIGIN, LONGITUDE_SCENE_ORIGIN, origin_utm32_x, origin_utm32_y)
     setup_city_json(origin_utm32_x, origin_utm32_y)
 
@@ -84,20 +100,22 @@ if __name__ == "__main__":
     if IMPORT_BUILDINGS:
         batch_import_cityjson(lod2_files)
 
-    print_header("RUNNING IMPORTER (PHASE V: FINALIZE SCENE)...")
+    print_header("RUNNING IMPORTER (PHASE V: LOAD TREES)...")
+    
+    if IMPORT_TREES:
+        import_trees(tree_files, min_x, min_y, max_x, max_y, origin_utm32_x, origin_utm32_y)
+
+    print_header("RUNNING IMPORTER (PHASE VI: FINALIZE SCENE)...")
 
     clean_empty_objects()
     
     assign_material_to_collection("DEMs", "itu_concrete", (0.6, 0.6, 0.6, 1))
     assign_material_to_collection("LoD2", "itu_brick", (0.7, 0.2, 0.2, 1))
+    assign_material_to_collection("Trees", "itu_wood", (0.1, 0.7, 0.2, 1))
 
-    min_x, min_y = wgs84_to_utm32(LATITUDE_FROM, LONGITUDE_FROM)
-    max_x, max_y = wgs84_to_utm32(LATITUDE_TO, LONGITUDE_TO)
-    min_x -= origin_utm32_x
-    min_y -= origin_utm32_y
-    max_x -= origin_utm32_x
-    max_y -= origin_utm32_y
-
-    delete_all_objects_outside_range(min_x, max_x, min_y, max_y)
-
+    min_x_fromorigin = min_x - origin_utm32_x
+    min_y_fromorigin = min_y - origin_utm32_y
+    max_x_fromorigin = max_x - origin_utm32_x
+    max_y_fromorigin = max_y - origin_utm32_y
+    delete_all_objects_outside_range(min_x_fromorigin, max_x_fromorigin, min_y_fromorigin, max_y_fromorigin)
     print_header("IMPORTER FINISHED.")
