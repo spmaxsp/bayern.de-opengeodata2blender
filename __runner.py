@@ -38,9 +38,12 @@ LONGITUDE_TO = 9.16554802
 LATITUDE_SCENE_ORIGIN = 49.9718674767623
 LONGITUDE_SCENE_ORIGIN = 9.161292440683683
 
-IMPORT_TERRAIN = False
+IMPORT_TERRAIN = True
 IMPORT_BUILDINGS = False
-IMPORT_TREES = True
+IMPORT_TREES = False
+
+TERRAIN_HIGH_RESOLUTION = True
+#TERRAIN_MESH_SIMPLIFICATION = 0.5  # percentage to cut down the vertex count of the terrain mesh (0.0 - 1.0)  ### TODO: currently not used
 
 REPLACE_EXISTING_FILES = False
 CLEAN_BLENDER = True
@@ -48,6 +51,7 @@ CLEAN_BLENDER = True
 
 DOWNLOAD_LINKS = {
     "dgm1": "https://geoservices.bayern.de/services/poly2metalink/metalink/dgm1",
+    "dgm5": "https://geoservices.bayern.de/services/poly2metalink/metalink/dgm5xyz",
     "lod2": "https://geoservices.bayern.de/services/poly2metalink/metalink/lod2"
 }
 DOWNLOAD_LINK_TREES = ["https://geodaten.bayern.de/odd/m/8/baeume3d/data/123007_baeume.gpkg"] 
