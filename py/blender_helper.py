@@ -102,7 +102,7 @@ def assign_material_to_collection(collection_name, material_name, color=(1, 1, 1
                 bpy.data.materials.remove(m)
                 removed += 1
 
-def delete_all_objects_outside_range(min_x, max_x, min_y, max_y):
+def delete_all_objects_outside_range(min_x_fromorigin, max_x_fromorigin, min_y_fromorigin, max_y_fromorigin):
     """
     Deletes all objects in the scene that are outside the specified X/Y range.
 
@@ -112,6 +112,11 @@ def delete_all_objects_outside_range(min_x, max_x, min_y, max_y):
         min_y (float): Minimum Y coordinate.
         max_y (float): Maximum Y coordinate.
     """
+    
+    min_x = min(min_x_fromorigin, max_x_fromorigin)
+    max_x = max(min_x_fromorigin, max_x_fromorigin)
+    min_y = min(min_y_fromorigin, max_y_fromorigin)
+    max_y = max(min_y_fromorigin, max_y_fromorigin)
     
     # Expand the range slightly to avoid edge cases
     min_x -= 10
@@ -135,8 +140,7 @@ def delete_all_objects_outside_range(min_x, max_x, min_y, max_y):
 
     # Collect all objects to delete
     objects_to_delete = [
-        obj for obj in tqdm(bpy.data.objects)
-        if obj.type == 'MESH' and is_outside_xy_bounds(obj, min_x, max_x, min_y, max_y)
+        obj for obj in tqdm(bpy.data.objects) if (obj.type == 'MESH' and is_outside_xy_bounds(obj, min_x, max_x, min_y, max_y))
     ]
 
     print(f"Found {len(objects_to_delete)} objects outside range.")
