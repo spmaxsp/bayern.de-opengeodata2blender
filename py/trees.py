@@ -119,6 +119,16 @@ def import_trees(files, min_x, min_y, max_x, max_y, origin_utm32_x, origin_utm32
             total_trees = len(gdf)
             print(f"Total number of trees in this layer: {total_trees}")
 
+            # Create trees object
+            mesh = bpy.data.meshes.new(f"trees_{layer}" + "_mesh")
+            cube = bpy.data.objects.new(f"trees_{layer}", mesh)
+            collection.objects.link(cube)
+
+            faces = []
+            verts = []
+            i = 0
+            ratio = 0.6  # width-to-height ratio of the tree cubes
+
             for idx, row in tqdm(gdf.iterrows()):
                 geom = row.geometry
                 if geom.geom_type != "MultiPoint":
@@ -130,5 +140,33 @@ def import_trees(files, min_x, min_y, max_x, max_y, origin_utm32_x, origin_utm32
                 for point in geom.geoms:
                     x, y = point.x, point.y
 
-                    create_cube_fast(x-origin_utm32_x, y-origin_utm32_y, z, height, 0.6, f"tree_{layer}_{idx + 1}", collection)
+                    x -= origin_utm32_x
+                    y -= origin_utm32_y
+
+                    # Add geometry (8 vertices of a cube)
+                    hw = (height * ratio) / 2
+                    hh = height / 2
+                    z = z + hh  # center the cube vertically
+                    i = len(verts)
+                    verts.append((x-hw, y-hw, z-hh) )
+                    verts.append(( x+hw, y-hw, z-hh))
+                    verts.append(( x+hw, y+hw, z-hh))
+                    verts.append(( x-hw, y+hw, z-hh))
+                    verts.append(( x-hw, y-hw, z+hh))
+                    verts.append(( x+hw, y-hw, z+hh))
+                    verts.append(( x+hw, y+hw, z+hh))
+                    verts.append(( x-hw, y+hw, z+hh))
+
+                    faces.append((i+0, i+1, i+2, i+3))
+                    faces.append((i+4, i+5, i+6, i+7))
+                    faces.append((i+0, i+1, i+5, i+4))
+                    faces.append((i+2, i+3, i+7, i+6))
+                    faces.append((i+1, i+2, i+6, i+5))
+                    faces.append((i+3, i+0, i+4, i+7))
+
+            # Create mesh geometry
+            mesh.from_pydata(verts, [], faces)
+            mesh.update()
+
+                    #create_cube_fast(x-origin_utm32_x, y-origin_utm32_y, z, height, 0.6, f"tree_{layer}_{idx + 1}", collection)
                     #print(f"Tree {idx + 1}: Location=({x:.2f}, {y:.2f}, {z:.2f}), Height={height}m")
