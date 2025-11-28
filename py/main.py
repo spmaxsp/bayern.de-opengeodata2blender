@@ -26,8 +26,10 @@ if __name__ == "__main__":
     print("Downloading metalink files...")
     if IMPORT_BUILDINGS:
         lod2_metalink_file = download_metalink(DOWNLOAD_LINKS["lod2"], EWKT_STR, dirs["base"], "lod2", PROJECT_NAME)
-    if IMPORT_TERRAIN:
+    if IMPORT_TERRAIN and TERRAIN_HIGH_RESOLUTION:
         dgm1_metalink_file = download_metalink(DOWNLOAD_LINKS["dgm1"], EWKT_STR, dirs["base"], "dgm1", PROJECT_NAME)
+    if IMPORT_TERRAIN and not TERRAIN_HIGH_RESOLUTION:
+        dgm5_metalink_file = download_metalink(DOWNLOAD_LINKS["dgm5"], EWKT_STR, dirs["base"], "dgm5", PROJECT_NAME)
 
     print("Parsing metalink files...")
     if IMPORT_BUILDINGS:
@@ -35,10 +37,15 @@ if __name__ == "__main__":
         print("LoD2 Files:")
         for file_info in lod2_files:
             print(f"  {file_info['name']}: {file_info['url']}")
-    if IMPORT_TERRAIN:
+    if IMPORT_TERRAIN and TERRAIN_HIGH_RESOLUTION:
         dgm1_files = parse_metalink(dgm1_metalink_file)
         print("DGM1 Files:")
         for file_info in dgm1_files:
+            print(f"  {file_info['name']}: {file_info['url']}")
+    if IMPORT_TERRAIN and not TERRAIN_HIGH_RESOLUTION:
+        dgm5_files = parse_metalink(dgm5_metalink_file)
+        print("DGM5 Files:")
+        for file_info in dgm5_files:
             print(f"  {file_info['name']}: {file_info['url']}")
     if IMPORT_TREES:
         tree_files = gen_tree_download_list(DOWNLOAD_LINK_TREES)
@@ -49,8 +56,11 @@ if __name__ == "__main__":
     print("Downloading files...")
     if IMPORT_BUILDINGS:
         lod2_files = download_meta_files(lod2_files, dirs["lod2_gml"])
-    if IMPORT_TERRAIN:
+    if IMPORT_TERRAIN and TERRAIN_HIGH_RESOLUTION:
         dgm1_files = download_meta_files(dgm1_files, dirs["dgm1"])
+    if IMPORT_TERRAIN and not TERRAIN_HIGH_RESOLUTION:
+        dgm5_files = download_meta_files(dgm5_files, dirs["dgm5"])
+        dgm5_files = extract_ascii_grids(dgm5_files, dirs["dgm5"])
     if IMPORT_TREES:
         tree_files = download_meta_files(tree_files, dirs["tree"])
 
@@ -60,13 +70,18 @@ if __name__ == "__main__":
         for file_info in lod2_files:
             if file_info["local"]:
                 print(f"  {file_info['name']}: {file_info['local']}")
-    if IMPORT_TERRAIN:
+    if IMPORT_TERRAIN and TERRAIN_HIGH_RESOLUTION:
         print("DGM1 Files:")
         for file_info in dgm1_files:
             if file_info["local"]:
                 print(f"  {file_info['name']}: {file_info['local']}")
+    if IMPORT_TERRAIN and not TERRAIN_HIGH_RESOLUTION:
+        print("DGM5 Files:")
+        for file_info in dgm5_files:
+            if file_info["local"]:
+                print(f"  {file_info['name']}: {file_info['local']}")
     if IMPORT_TREES:
-        print("DGM1 Files:")
+        print("GEOPACKAGE Files:")
         for file_info in tree_files:
             if file_info["local"]:
                 print(f"  {file_info['name']}: {file_info['local']}")
@@ -89,16 +104,24 @@ if __name__ == "__main__":
     setup_blender_gis("EPSG:25832", LONGITUDE_SCENE_ORIGIN, LONGITUDE_SCENE_ORIGIN, origin_utm32_x, origin_utm32_y)
     setup_city_json(origin_utm32_x, origin_utm32_y)
 
-    print_header("RUNNING IMPORTER (PHASE III: LOAD GROUND)...")
-    
-    if IMPORT_TERRAIN:
-        batch_import_geotiff(dgm1_files)
-        fix_terrain_mesh()
-
-    print_header("RUNNING IMPORTER (PHASE IV: LOAD BUILDINGS)...")
+    print_header("RUNNING IMPORTER (PHASE III: LOAD BUILDINGS)...")
     
     if IMPORT_BUILDINGS:
         batch_import_cityjson(lod2_files)
+        min_x_fromorigin = min_x - origin_utm32_x
+        min_y_fromorigin = min_y - origin_utm32_y
+        max_x_fromorigin = max_x - origin_utm32_x
+        max_y_fromorigin = max_y - origin_utm32_y
+        delete_all_objects_outside_range(min_x_fromorigin, max_x_fromorigin, min_y_fromorigin, max_y_fromorigin)
+
+    print_header("RUNNING IMPORTER (PHASE IV: LOAD GROUND)...")
+    
+    if IMPORT_TERRAIN:
+        if TERRAIN_HIGH_RESOLUTION:
+            batch_import_geotiff(dgm1_files)
+            fix_terrain_mesh()
+        else:
+            batch_import_ascii_grid(dgm5_files, offset_x=origin_utm32_x, offset_y=origin_utm32_y)
 
     print_header("RUNNING IMPORTER (PHASE V: LOAD TREES)...")
     
@@ -107,15 +130,10 @@ if __name__ == "__main__":
 
     print_header("RUNNING IMPORTER (PHASE VI: FINALIZE SCENE)...")
 
-    clean_empty_objects()
+    
     
     assign_material_to_collection("DEMs", "itu_concrete", (0.6, 0.6, 0.6, 1))
     assign_material_to_collection("LoD2", "itu_brick", (0.7, 0.2, 0.2, 1))
     assign_material_to_collection("Trees", "itu_wood", (0.1, 0.7, 0.2, 1))
 
-    min_x_fromorigin = min_x - origin_utm32_x
-    min_y_fromorigin = min_y - origin_utm32_y
-    max_x_fromorigin = max_x - origin_utm32_x
-    max_y_fromorigin = max_y - origin_utm32_y
-    delete_all_objects_outside_range(min_x_fromorigin, max_x_fromorigin, min_y_fromorigin, max_y_fromorigin)
     print_header("IMPORTER FINISHED.")
