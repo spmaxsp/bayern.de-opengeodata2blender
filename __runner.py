@@ -27,6 +27,8 @@ _scripts = (
     "main.py"
 )
 
+USE_CONFIGURATION_FILE = True
+CONFIGURATION_FILEPATH = "/home/maximilian/Documents/git/bayern.de-opengeodata2blender/TH_Umgebung_1km2.json"  # Update this path if needed
 
 PROJECT_NAME = "MyProject"
 
@@ -47,6 +49,10 @@ TERRAIN_HIGH_RESOLUTION = True
 
 REPLACE_EXISTING_FILES = False
 CLEAN_BLENDER = True
+
+SAVE_AS_COPY = True
+
+AUTO_EXPORT_MITSUBA = True
 
 
 DOWNLOAD_LINKS = {
