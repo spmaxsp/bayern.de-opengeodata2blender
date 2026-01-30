@@ -16,10 +16,10 @@ def download_metalink(url, optionstring, base_dir, datatype, projectname):
     filename = f"{projectname}_{today}_{datatype}.metalink"
     filepath = os.path.join(base_dir, filename)
 
-    # Skip download if file already exists
-    if os.path.exists(filepath):
-        print(f"Metalink already exists: {filename}")
-        return filepath
+    # # Skip download if file already exists
+    # if os.path.exists(filepath):
+    #     print(f"Metalink already exists: {filename}")
+    #     return filepath
 
     # Send POST request
     response = requests.post(url, data=optionstring)
