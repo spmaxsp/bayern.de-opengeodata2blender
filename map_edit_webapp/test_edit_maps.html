@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OSM Rectangle Drawing Mode</title>
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+    }
+
+    #toolbar {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 1000;
+      background: white;
+      padding: 6px;
+      border-radius: 4px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    #map {
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .draw-active {
+      cursor: crosshair;
+    }
+  </style>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body>
+
+
+
+<div id="toolbar" class="absolute top-4 left-4 z-50 bg-white p-5 rounded-xl shadow-lg space-y-4 w-96 max-h-[95vh] overflow-y-auto">
+
+  <!-- Heading -->
+  <h1 class="text-xl font-bold text-gray-800 text-center">
+    Map Scene Generator
+  </h1>
+
+
+
+  <!-- File input / Save -->
+  <h2 class="text-lg font-semibold text-gray-700">
+    Load / Save Scene JSON:
+  </h2>
+
+  <div class="flex flex-col">
+    <label class="text-sm font-medium">Load JSON</label>
+    <input id="fileInput" type="file" accept=".json" class="border rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-300"/>
+  </div>
+
+  <button id="saveBtn" class="bg-green-500 text-white rounded-xl px-3 py-3 hover:bg-green-600 transition">
+    Save JSON
+  </button>
+
+
+
+  <!-- File title -->
+  <h2 class="text-lg font-semibold text-gray-700">
+    Title:
+  </h2>
+  <div class="flex flex-col">
+    <label class="text-sm font-medium">File Title</label>
+    <input id="fileTitle" type="text" class="border rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-300" placeholder="scene_name"/>
+  </div>
+
+
+
+  <!-- Map Area and Origin -->
+  <h2 class="text-lg font-semibold text-gray-700">
+    Map Area and Origin:
+  </h2>
+
+  <button id="drawareaBtn" class="bg-blue-500 text-white py-3 rounded-xl px-3 py-3 hover:bg-blue-600 transition">
+    Draw Area
+  </button>
+
+  <div class="grid grid-cols-2 gap-3">
+    <div>
+      <label class="text-sm">SW Lat</label>
+      <input id="swLat" type="number" step="0.0001" class="border rounded-xl px-3 py-2 w-full"/>
+    </div>
+    <div>
+      <label class="text-sm">SW Lng</label>
+      <input id="swLng" type="number" step="0.0001" class="border rounded-xl px-3 py-2 w-full"/>
+    </div>
+    <div>
+      <label class="text-sm">NE Lat</label>
+      <input id="neLat" type="number" step="0.0001" class="border rounded-xl px-3 py-2 w-full"/>
+    </div>
+    <div>
+      <label class="text-sm">NE Lng</label>
+      <input id="neLng" type="number" step="0.0001" class="border rounded-xl px-3 py-2 w-full"/>
+    </div>
+  </div>
+
+  <div class="flex flex-col">
+    <label class="text-sm font-medium">Area</label>
+    <input id="areaOutput" type="text" readonly class="border rounded-xl px-3 py-2 bg-gray-100"/>
+  </div>
+
+  <button id="originBtn" class="bg-purple-500 text-white py-3 rounded-xl px-3 py-3 hover:bg-purple-600 transition">
+    Place Origin:
+  </button>
+
+  <div class="grid grid-cols-2 gap-3">
+    <div>
+      <label class="text-sm">Origin Lat</label>
+      <input id="originLat" type="number" step="0.0001" class="border rounded-xl px-3 py-2 w-full"/>
+    </div>
+    <div>
+      <label class="text-sm">Origin Lng</label>
+      <input id="originLng" type="number" step="0.0001" class="border rounded-xl px-3 py-2 w-full"/>
+    </div>
+  </div>
+
+
+
+  <!-- Blender / Mitsuba -->
+  <h2 class="text-lg font-semibold text-gray-700">
+    Blender / Mitsuba:
+  </h2>
+
+  <div class="space-y-2">
+    <label class="text-sm font-semibold">Import Settings</label>
+
+    <label class="flex items-center gap-2">
+      <input id="checkbTerrain" type="checkbox" checked>
+      Import Terrain
+    </label>
+
+    <label class="flex items-center gap-2">
+      <input id="checkbBuildings" type="checkbox" checked>
+      Import Buildings
+    </label>
+
+    <label class="flex items-center gap-2">
+      <input id="checkbTrees" type="checkbox" checked>
+      Import Trees
+    </label>
+
+    <label class="text-sm font-semibold">Download Settings</label>
+
+    <label class="flex items-center gap-2">
+      <input id="checkbReplaceFiles" type="checkbox">
+      Replace Existing Files
+    </label>
+
+    <label class="text-sm font-semibold">Scene Settings</label>
+    <label class="flex items-center gap-2">
+      <input id="checkbCleanBlender" type="checkbox" checked>
+      Clean Blender Scene
+    </label>
+  </div>
+
+  <!-- Blender output status -->
+  <div class="flex flex-col">
+    <label class="text-sm font-medium">Last Blender Output Generated</label>
+    <input id="blenderOutputTime" type="text" readonly class="border rounded-xl px-3 py-1 bg-gray-100" placeholder="Not generated"/>
+  </div>
+
+  <!-- File locations -->
+  <div class="flex flex-col">
+    <label class="text-sm font-medium">Generated by Blender File</label>
+    <input id="blenderPath" type="text" readonly class="border rounded-xl px-3 py-1 bg-gray-100" placeholder="Not generated"/>
+  </div>
+
+  <div class="flex flex-col">
+    <label class="text-sm font-medium">Mitsuba File Export Location</label>
+    <input id="mitsubaPath" type="text" readonly class="border rounded-xl px-3 py-1 bg-gray-100" placeholder="Not generated"/>
+  </div>
+
+  <!-- Settings -->
+  
+
+
+</div>
+
+<div id="map" class="w-screen h-screen"></div>
+
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="draw_map.js"></script>
+<script src="draw_marker.js"></script>
+<script src="main.js"></script>
+
+</body>
+</html>
