@@ -55,6 +55,7 @@ if __name__ == "__main__":
     print_header("RUNNING IMPORTER (PHASE I: DOWNLOAD FILES)...")
 
     print("Downloading metalink files...")
+    EWKT_STR = f"SRID=4326;POLYGON(({LONGITUDE_FROM} {LATITUDE_FROM},{LONGITUDE_FROM} {LATITUDE_TO},{LONGITUDE_TO} {LATITUDE_TO},{LONGITUDE_TO} {LATITUDE_FROM},{LONGITUDE_FROM} {LATITUDE_FROM}))"
     if IMPORT_BUILDINGS:
         lod2_metalink_file = download_metalink(DOWNLOAD_LINKS["lod2"], EWKT_STR, dirs["base"], "lod2", PROJECT_NAME)
     if IMPORT_TERRAIN and TERRAIN_HIGH_RESOLUTION:

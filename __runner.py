@@ -61,7 +61,6 @@ DOWNLOAD_LINKS = {
     "lod2": "https://geoservices.bayern.de/services/poly2metalink/metalink/lod2"
 }
 DOWNLOAD_LINK_TREES = ["https://geodaten.bayern.de/odd/m/8/baeume3d/data/123007_baeume.gpkg"] 
-EWKT_STR = f"SRID=4326;POLYGON(({LONGITUDE_FROM} {LATITUDE_FROM},{LONGITUDE_FROM} {LATITUDE_TO},{LONGITUDE_TO} {LATITUDE_TO},{LONGITUDE_TO} {LATITUDE_FROM},{LONGITUDE_FROM} {LATITUDE_FROM}))"
 TMP_PATH = "C:\\Users\\USER\\Documents\\opengeodata2blender\\temp\\"
 JAVA_PATH = "C:\\Users\\USER\\Documents\\opengeodata2blender\\toolchain\\jdk-25.0.1\\"
 CITYGMLTOOLS_PATH = "C:\\Users\\USER\\Documents\\opengeodata2blender\\toolchain\\citygml-tools-2.4.0\\citygml-tools.bat"  # Path to CityGMLTools jar file, if needed for further processing
