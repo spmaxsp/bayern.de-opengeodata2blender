@@ -2,9 +2,15 @@
 temp/**
 toolchain/**
 
+mitsuba*/
+
 # But keep the folders themselves (optional)
 !temp/.gitkeep
 !toolchain/.gitkeep
 
 
 *.blend1
+*.blend
+*.json
+
+!blender-template.blend
