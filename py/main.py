@@ -8,8 +8,39 @@
 
 # no imports needed because blender has already loaded all required files !!!!!!!!!!!!!!!
 
+import json
+
 if __name__ == "__main__":
-    
+
+    if USE_CONFIGURATION_FILE:
+        print("Loading configuration from file...")
+        with open(CONFIGURATION_FILEPATH, 'r') as config_file:
+            config = json.load(config_file)
+
+            PROJECT_NAME = config["meta"]["title"]
+            LATITUDE_FROM = config["area"]["ne"]["lat"]
+            LONGITUDE_FROM = config["area"]["ne"]["lng"]
+            LATITUDE_TO = config["area"]["sw"]["lat"]
+            LONGITUDE_TO = config["area"]["sw"]["lng"]
+            LATITUDE_SCENE_ORIGIN = config["origin"]["lat"]
+            LONGITUDE_SCENE_ORIGIN = config["origin"]["lng"]
+            IMPORT_TERRAIN = config["import"]["terrain"]
+            IMPORT_BUILDINGS = config["import"]["buildings"]
+            IMPORT_TREES = config["import"]["trees"]
+            TERRAIN_HIGH_RESOLUTION = False
+            REPLACE_EXISTING_FILES = config["import"]["replaceExistingFiles"]
+            CLEAN_BLENDER = config["import"]["cleanBlender"]
+
+    print("Configuration:")
+    print(f"  Project Name: {PROJECT_NAME}")
+    print(f"  Area from ({LATITUDE_FROM}, {LONGITUDE_FROM}) to ({LATITUDE_TO}, {LONGITUDE_TO})")
+    print(f"  Scene Origin: ({LATITUDE_SCENE_ORIGIN}, {LONGITUDE_SCENE_ORIGIN})")
+    print(f"  Import Terrain: {IMPORT_TERRAIN}")
+    print(f"  Import Buildings: {IMPORT_BUILDINGS}")
+    print(f"  Import Trees: {IMPORT_TREES}")
+    print(f"  Replace Existing Files: {REPLACE_EXISTING_FILES}")
+    print(f"  Clean Blender: {CLEAN_BLENDER}")
+
     print_header("RUNNING IMPORTER (PHASE 0: SETUP)...")
     
     print("Initializing folder structure...")
@@ -137,3 +168,52 @@ if __name__ == "__main__":
     assign_material_to_collection("Trees", "itu_wood", (0.1, 0.7, 0.2, 1))
 
     print_header("IMPORTER FINISHED.")
+
+    last_run_time = None
+    blender_file_path = None
+    mitsuba_export_path = None
+
+    template_path = bpy.data.filepath
+    template_dir = os.path.dirname(template_path)
+
+    if SAVE_AS_COPY:
+        print("Saving Blender file...")
+        
+        blender_file_path = os.path.join(template_dir, f"{PROJECT_NAME}.blend")
+        print(f"  Output Path: {blender_file_path}")
+        bpy.ops.wm.save_as_mainfile(
+            filepath=blender_file_path,
+            copy=True
+        )
+        last_run_time = datetime.now().isoformat()
+        print("Blender file saved.")
+
+    if AUTO_EXPORT_MITSUBA:
+        print("Exporting scene to Mitsuba format...")
+
+
+        # Create Mitsuba output directory
+        mitsuba_dir = os.path.join(template_dir, f"mitsuba_{PROJECT_NAME}")
+        os.makedirs(mitsuba_dir, exist_ok=True)
+
+        # Output XML path
+        mitsuba_export_path = os.path.join(mitsuba_dir, f"{PROJECT_NAME}.xml")
+        bpy.ops.export_scene.mitsuba(
+            filepath=mitsuba_export_path,
+            export_ids=True,
+            axis_forward='Y',
+            axis_up='Z'
+        )
+        print("Mitsuba export written to:", mitsuba_export_path)
+
+
+    if USE_CONFIGURATION_FILE:
+        print("Writing back status to configuration file...")
+        with open(CONFIGURATION_FILEPATH, 'r+') as config_file:
+            config = json.load(config_file)
+            config["status"]["lastBlenderRun"] = last_run_time
+            config["status"]["blenderFile"] = blender_file_path
+            config["status"]["mitsubaFile"] = os.path.relpath(mitsuba_export_path, template_dir) if mitsuba_export_path else None
+            config_file.seek(0)
+            json.dump(config, config_file, indent=4)
+            config_file.truncate()
